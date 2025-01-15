@@ -15,11 +15,31 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.TOKEN }}
+        fetch-depth: 0
+        ref: ${{ github.event.pull_request.head.ref }}
 
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v2.0.3
       with:
         terraform_version: 1.5.6
+
+    - name: Generate TF Docs
+      uses: terraform-docs/gh-actions@v1.3.0
+      with:
+       working-dir: . 
+    - name: configue git
+      run: |
+       git config --global user.name 'kishorevr97'
+       git config --global user.email 'kishorevr97@gmail.com'
+    - name: install terraform docs
+      uses: terraform-docs/gh-actions@v1.3.0
+      with:
+        working-dir: .
+        output-file: README.md
+        output-method: inject
+        git-push: "true"
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -34,19 +54,19 @@ jobs:
     - name: Terraform plan
       run: terraform plan
 
-    - name: Generate Terraform Docs
-      run: |
-       terraform-docs makrkdown table . > README.md
-      if: github.event_name == 'pull_request'
+    # - name: Generate Terraform Docs
+    #   run: |
+    #    terraform-docs makrkdown table . > README.md
+    #   if: github.event_name == 'pull_request'
        
 
-    - name: Render terraform docs and push changes back to PR
-      uses: terraform-docs/gh-actions@main
-      with:
-        working-dir: .
-        output-file: README.md
-        output-method: inject
-        git-push: "true"
+    # - name: Render terraform docs and push changes back to PR
+    #   uses: terraform-docs/gh-actions@main
+    #   with:
+    #     working-dir: .
+    #     output-file: README.md
+    #     output-method: inject
+    #     git-push: "true"
         
     - name: Apply Terraform
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
