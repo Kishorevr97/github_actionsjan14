@@ -3,10 +3,10 @@ name: Deploy to AWS
 on:
   push:
     branches:
-      - main
+      - feature-1
   pull_request:
     branches:
-      - main
+      - feature-1
 
 jobs:
   terraform:
