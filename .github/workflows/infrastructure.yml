@@ -1,5 +1,5 @@
 name: Deploy to AWS
- 
+
 on:
   push:
     branches:
@@ -13,49 +13,63 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        token: ${{ secrets.TOKEN }}
-        fetch-depth: 0
-        ref: ${{ github.event.pull_request.head.ref }}
+      # Step 1: Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.TOKEN }}
+          fetch-depth: 0
+          ref: ${{ github.ref }}
 
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v2.0.3
-      with:
-        terraform_version: 1.5.6
-
-    - name: configue git
-      run: |
-       git config --global user.name 'kishorevr97'
-       git config --global user.email 'kishorevr97@gmail.com'
+      # Step 2: Configure Git
+      - name: Configure Git
+        run: |
+          git config --global user.name 'kishorevr97'
+          git config --global user.email 'kishorevr97@gmail.com"
  
+      # Step 3: Set up Terraform
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2.0.3
+        with:
+          terraform_version: 1.5.6
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.ACCESS_KEY }}
-        aws-secret-access-key: ${{ secrets.SECRET_KEY }}
-        aws-region: eu-north-1
+      # Step 4: Install Terraform Docs
+      - name: Install Terraform Docs
+        uses: terraform-docs/gh-actions@v1.3.0
+        with:
+          working-dir: .
+          output-file: README.md
+          output-method: inject
+          git-push: "true"
 
-    - name: Terraform Init
-      run: terraform init
+      # Step 5: Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.SECRET_KEY }}
+          aws-region: eu-north-1
 
-    - name: Terraform plan
-      run: terraform plan -out=tfplan
+    
+      # Step 6: Initialize Terraform
+      - name: Terraform Init
+        run: terraform init
 
-
-    - name: Render terraform docs and push changes back to PR
-      uses: terraform-docs/gh-actions@main
-      with:
-        working-dir: .
-        output-file: README.md
-        output-method: inject
-        git-push: "true"
-        git-push-user-name: "kishorevr97"
-        git-push-user-email: "kishorevr97@gmail.com"
+      # Step 7: Terraform Plan
+      - name: Terraform Plan
+        run: terraform plan
         
-    - name: Apply Terraform
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      run: terraform apply -auto-approve 
-     
+      - name: Render terraform docs and push changes back to PR
+        uses: terraform-docs/gh-actions@main
+        with:
+         working-dir: .
+         output-file: README.md
+         output-method: inject
+         git-push: "true"
+         git-push-user-name: "kishorevr97"
+         git-push-user-email: "kishorevr97@gmail.com"
+
+      # Step 8: Apply Terraform (only on push to main branch)
+      - name: Apply Terraform
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve
