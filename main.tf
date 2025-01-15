@@ -1,7 +1,7 @@
 provider "aws" {
   region = "eu-north-1"
 }
-
+  
 resource "aws_s3_bucket" "bucket1" {
   bucket = "kishore-bucket1"
   acl    = "private"
