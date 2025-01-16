@@ -48,6 +48,14 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
+      - name: install lfs
+        run: |
+         git lfs install
+         git lfs track ".terraform/**/*"
+         git add .gitattributes
+         git commit -m "Add .terraform files to Git LFS"
+         git push origin main
+
       - name: Install Terraform Docs
         uses: terraform-docs/gh-actions@v1.3.0
         with:
