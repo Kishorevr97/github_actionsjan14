@@ -46,7 +46,7 @@ jobs:
 
       # Step 7: Terraform Plan
       - name: Terraform Plan
-        run: terraform plan
+        run: terraform plan -out=tfplan
 
       - name: Install Terraform Docs
         uses: terraform-docs/gh-actions@v1.3.0
